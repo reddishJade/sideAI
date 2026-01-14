@@ -299,9 +299,6 @@ function renderHistoryList() {
     });
   });
 }
-  }
-  setLocalStorage({ history });
-}
 
 function formatTimestamp(date) {
   const pad = (value) => String(value).padStart(2, "0");

@@ -11,23 +11,26 @@
       <h1>SideAI Settings</h1>
       <label>
         API Key
-        <input type="password" id="api-key" placeholder="sk-..." autocomplete="off" />
+        <input type="password" id="api-key" autocomplete="off" />
+        <div class="field-hint">Paste your API key here.</div>
       </label>
       <label>
         API Endpoint
         <input
           type="text"
           id="api-url"
-          placeholder="https://api.openai.com/v1/chat/completions"
         />
+        <div class="field-hint">Example: https://api.openai.com/v1/chat/completions</div>
       </label>
       <label>
         Model
-        <input type="text" id="model" placeholder="gpt-4o-mini" />
+        <input type="text" id="model" />
+        <div class="field-hint">Single model name (used if no list is provided).</div>
       </label>
       <label>
         Models (comma separated)
-        <input type="text" id="models" placeholder="gpt-4o-mini, gpt-4o, gpt-4.1-mini" />
+        <input type="text" id="models" />
+        <div class="field-hint">Example: gpt-4o-mini, gpt-4o, gpt-4.1-mini</div>
       </label>
       <label>
         Temperature
@@ -49,9 +52,9 @@
         Frequency Penalty
         <input type="number" id="frequency-penalty" min="-2" max="2" step="0.1" placeholder="0" />
       </label>
-      <label>
+      <label class="checkbox-row">
         <input type="checkbox" id="stream" />
-        Stream responses
+        <span>Stream responses</span>
       </label>
       <label>
         Theme

@@ -40,8 +40,8 @@ function applyTheme(theme) {
 async function loadSettings() {
   const data = await getStorage({
     apiKey: "",
-    apiUrl: "https://api.openai.com/v1/chat/completions",
-    model: "gpt-4o-mini",
+    apiUrl: "",
+    model: "",
     models: "",
     theme: "auto",
     temperature: "",

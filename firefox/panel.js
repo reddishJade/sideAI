@@ -13,6 +13,7 @@ const statusEl = document.getElementById("status");
 let history = [];
 let settings = null;
 let isSending = false;
+let availableModels = [];
 const MAX_HISTORY = 100;
 
 function getStorage(keys) {
@@ -71,26 +72,48 @@ function parseModels(models, fallback) {
   return fallback ? [fallback] : [];
 }
 
-function applyModelOptions(models, activeModel) {
+function applyModelOptions(models, activeModel, hasApi) {
   modelSelect.innerHTML = "";
-  if (models.length === 0) {
+  if (!hasApi) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "Set API & models";
+    option.textContent = "No models";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
     modelSelect.classList.add("empty");
     return;
   }
-  modelSelect.classList.remove("empty");
+  if (models.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Please set models";
+    option.disabled = true;
+    option.selected = true;
+    modelSelect.appendChild(option);
+    modelSelect.classList.add("empty");
+    return;
+  }
+  if (!activeModel) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Please select model";
+    option.disabled = true;
+    option.selected = true;
+    modelSelect.appendChild(option);
+    modelSelect.classList.add("empty");
+  } else {
+    modelSelect.classList.remove("empty");
+  }
   models.forEach((model) => {
     const option = document.createElement("option");
     option.value = model;
     option.textContent = model;
     modelSelect.appendChild(option);
   });
-  modelSelect.value = activeModel || models[0] || "";
+  if (activeModel) {
+    modelSelect.value = activeModel;
+  }
 }
 
 function addMessage(role, content, isError = false) {
@@ -165,8 +188,8 @@ function exportMarkdown() {
 async function loadSettings() {
   const data = await getStorage({
     apiKey: "",
-    apiUrl: "https://api.openai.com/v1/chat/completions",
-    model: "gpt-4o-mini",
+    apiUrl: "",
+    model: "",
     models: "",
     activeModel: "",
     theme: "auto",
@@ -192,11 +215,15 @@ async function loadSettings() {
     stream: data.stream !== false,
   };
   applyTheme(settings.theme);
-  const modelList = parseModels(settings.models, settings.model);
-  const resolvedActive =
-    modelList.find((model) => model === settings.activeModel) || modelList[0] || settings.model;
+  availableModels = parseModels(settings.models, settings.model);
+  let resolvedActive = "";
+  if (settings.activeModel && availableModels.includes(settings.activeModel)) {
+    resolvedActive = settings.activeModel;
+  } else if (availableModels.length === 1) {
+    resolvedActive = availableModels[0];
+  }
   settings.activeModel = resolvedActive;
-  applyModelOptions(modelList, resolvedActive);
+  applyModelOptions(availableModels, resolvedActive, Boolean(settings.apiKey));
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);
@@ -291,9 +318,14 @@ async function sendMessage() {
     return;
   }
 
-  if (!settings || !settings.apiKey || !settings.apiUrl || !settings.model) {
+  if (!settings || !settings.apiKey || !settings.apiUrl) {
     setStatus("Missing API settings", true);
     openOptions();
+    return;
+  }
+  if (!settings.activeModel) {
+    setStatus("Select a model", true);
+    modelSelect.focus();
     return;
   }
 
@@ -308,7 +340,7 @@ async function sendMessage() {
 
   try {
     const requestBody = {
-      model: settings.activeModel || settings.model,
+      model: settings.activeModel,
       messages: history,
     };
     if (settings.temperature !== null) {
@@ -388,9 +420,10 @@ modelSelect.addEventListener("change", () => {
   }
   settings.activeModel = selected;
   setStorage({ activeModel: selected });
+  modelSelect.classList.remove("empty");
 });
 modelSelect.addEventListener("mousedown", (event) => {
-  if (!settings || modelSelect.classList.contains("empty")) {
+  if (!settings || !settings.apiKey || availableModels.length === 0) {
     event.preventDefault();
     openOptions();
   }

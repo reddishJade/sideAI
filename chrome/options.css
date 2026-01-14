@@ -68,11 +68,6 @@ label {
   color: var(--muted);
 }
 
-label input[type="checkbox"] {
-  margin-right: 8px;
-  accent-color: var(--accent);
-}
-
 input,
 select {
   width: 100%;
@@ -84,6 +79,23 @@ select {
   font-family: inherit;
   color: var(--text);
   background: var(--panel);
+}
+
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--accent);
 }
 
 input:focus,

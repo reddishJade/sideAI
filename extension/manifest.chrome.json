@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "SideAI",
+  "version": "0.1.0",
+  "description": "Minimal sidebar AI chat for OpenAI-compatible APIs.",
+  "permissions": ["storage", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "action": {
+    "default_title": "SideAI"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

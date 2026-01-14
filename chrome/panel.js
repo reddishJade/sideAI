@@ -38,86 +38,8 @@ let activeConversationId = "";
 let historyFilter = "";
 const themeOrder = ["auto", "light", "dark"];
 let miniModels = [];
+const markdown = window.SideAiMarkdown;
 
-function escapeHtml(value) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function renderMarkdown(content) {
-  const blocks = [];
-  let text = content || "";
-
-  text = text.replace(/```([\\w-]+)?\\n([\\s\\S]*?)```/g, (_match, lang, code) => {
-    const id = blocks.length;
-    blocks.push({
-      type: "code",
-      lang: lang || "",
-      content: code || "",
-    });
-    return `@@BLOCK_${id}@@`;
-  });
-
-  text = text.replace(/\\$\\$([\\s\\S]*?)\\$\\$/g, (_match, latex) => {
-    const id = blocks.length;
-    blocks.push({
-      type: "latex",
-      lang: "LaTeX",
-      content: latex || "",
-    });
-    return `@@BLOCK_${id}@@`;
-  });
-
-  let html = escapeHtml(text);
-  html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
-  html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
-  html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/(^|\s)\*([^*]+)\*/g, "$1<em>$2</em>");
-  html = html.replace(
-    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noreferrer">$1</a>'
-  );
-  html = html.replace(/\n/g, "<br>");
-
-  blocks.forEach((block, index) => {
-    const safeContent = escapeHtml(block.content);
-    const encoded = encodeURIComponent(block.content || "");
-    const label = block.type === "latex" ? "LaTeX" : block.lang || "Code";
-    const blockHtml = `
-      <div class="${block.type}-block">
-        <div class="code-header">
-          <span class="code-lang">${label}</span>
-          <button class="copy-button" data-copy="${encoded}" type="button">Copy</button>
-        </div>
-        <pre><code>${safeContent}</code></pre>
-      </div>
-    `;
-    html = html.replace(`@@BLOCK_${index}@@`, blockHtml);
-  });
-
-  return html;
-}
-
-function attachCopyHandlers(container) {
-  container.querySelectorAll(".copy-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const raw = button.dataset.copy || "";
-      const text = decodeURIComponent(raw);
-      await navigator.clipboard.writeText(text);
-      const original = button.textContent;
-      button.textContent = "Copied";
-      setTimeout(() => {
-        button.textContent = original;
-      }, 1200);
-    });
-  });
-}
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -258,8 +180,8 @@ function applyModelOptions(models, activeModel, hasApi) {
 function addMessage(role, content, isError = false) {
   const messageEl = document.createElement("div");
   messageEl.className = `message ${role}${isError ? " error" : ""}`;
-  messageEl.innerHTML = renderMarkdown(content || "");
-  attachCopyHandlers(messageEl);
+  messageEl.innerHTML = markdown.renderMarkdown(content || "");
+  markdown.attachCopyHandlers(messageEl);
   chatEl.appendChild(messageEl);
   chatEl.scrollTop = chatEl.scrollHeight;
   return messageEl;
@@ -701,8 +623,8 @@ async function streamChatCompletion(requestBody) {
 
   const finalText = assistantText.trim();
   if (finalText) {
-    assistantEl.innerHTML = renderMarkdown(finalText);
-    attachCopyHandlers(assistantEl);
+    assistantEl.innerHTML = markdown.renderMarkdown(finalText);
+    markdown.attachCopyHandlers(assistantEl);
   }
   return finalText;
 }

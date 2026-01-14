@@ -61,7 +61,6 @@ async function loadSettings() {
   presencePenaltyEl.value = data.presencePenalty ?? "";
   frequencyPenaltyEl.value = data.frequencyPenalty ?? "";
   streamEl.checked = data.stream !== false;
-  applyTheme(themeEl.value);
 }
 
 async function saveSettings() {

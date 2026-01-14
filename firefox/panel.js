@@ -21,6 +21,7 @@ const miniApiKey = document.getElementById("mini-api-key");
 const miniApiUrl = document.getElementById("mini-api-url");
 const miniModelSelect = document.getElementById("mini-model-select");
 const miniModelInput = document.getElementById("mini-model-input");
+const miniModelAdd = document.getElementById("mini-model-add");
 const miniSave = document.getElementById("mini-save");
 const miniMore = document.getElementById("mini-more");
 const statusEl = document.getElementById("status");
@@ -34,6 +35,7 @@ let conversations = [];
 let activeConversationId = "";
 let historyFilter = "";
 const themeOrder = ["auto", "light", "dark"];
+let miniModels = [];
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -487,7 +489,8 @@ async function loadSettings() {
   applyModelOptions(availableModels, resolvedActive, Boolean(settings.apiKey && settings.apiUrl));
   miniApiKey.value = settings.apiKey || "";
   miniApiUrl.value = settings.apiUrl || "";
-  applyMiniModelOptions(availableModels, resolvedActive);
+  miniModels = [...availableModels];
+  applyMiniModelOptions(miniModels, resolvedActive);
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);
@@ -704,24 +707,31 @@ miniMore.addEventListener("click", openOptions);
 miniSave.addEventListener("click", async () => {
   const apiKey = miniApiKey.value.trim();
   const apiUrl = miniApiUrl.value.trim();
-  const modelInput = miniModelInput.value.trim();
-  let models = parseModels(settings?.models || "", settings?.model || "");
-  if (modelInput && !models.includes(modelInput)) {
-    models = [modelInput, ...models];
-  }
+  const models = [...miniModels];
   const picked = miniModelSelect.value;
-  const activeModel = modelInput || (picked && models.includes(picked) ? picked : "");
+  const activeModel = picked && models.includes(picked) ? picked : "";
 
   await setStorage({
     apiKey,
     apiUrl,
     models: models.join(", "),
     activeModel,
-    model: models[0] || modelInput || "",
+    model: models[0] || "",
   });
   miniModelInput.value = "";
   closeMiniSettings();
   loadSettings();
+});
+miniModelAdd.addEventListener("click", () => {
+  const value = miniModelInput.value.trim();
+  if (!value) {
+    return;
+  }
+  if (!miniModels.includes(value)) {
+    miniModels = [value, ...miniModels];
+  }
+  miniModelInput.value = "";
+  applyMiniModelOptions(miniModels, value);
 });
 modelSelect.addEventListener("change", () => {
   const selected = modelSelect.value;

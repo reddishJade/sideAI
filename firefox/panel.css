@@ -388,6 +388,17 @@ body {
   gap: 10px;
 }
 
+.mini-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mini-row .button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .mini-label {
   display: flex;
   flex-direction: column;

@@ -170,6 +170,27 @@ body {
   box-shadow: var(--shadow);
 }
 
+.message h1,
+.message h2,
+.message h3 {
+  margin: 8px 0 6px;
+  line-height: 1.3;
+}
+
+.message h1 {
+  font-size: 18px;
+}
+
+.message h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.message h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .message a {
   color: var(--accent);
   text-decoration: none;

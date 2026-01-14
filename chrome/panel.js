@@ -73,6 +73,9 @@ function renderMarkdown(content) {
   });
 
   let html = escapeHtml(text);
+  html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
   html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/(^|\s)\*([^*]+)\*/g, "$1<em>$2</em>");
@@ -352,17 +355,10 @@ async function loadConversations() {
   if (!activeConversationId || !getConversation(activeConversationId)) {
     if (conversations.length > 0) {
       activeConversationId = conversations[0].id;
-    } else {
-      createConversation();
-      return;
     }
   }
 
-  const conversation = getConversation(activeConversationId);
-  history = conversation ? conversation.messages : [];
-  renderHistoryList();
-  renderChat();
-  persistConversations();
+  createConversation();
 }
 
 function setActiveConversation(id) {

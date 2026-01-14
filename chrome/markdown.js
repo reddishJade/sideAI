@@ -1,4 +1,4 @@
-const SideAiMarkdown = (() => {
+window.SideAiMarkdown = (() => {
   function escapeHtml(value) {
     return value
       .replace(/&/g, "&amp;")

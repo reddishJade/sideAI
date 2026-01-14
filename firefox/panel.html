@@ -12,9 +12,9 @@
         <div class="title">SideAI</div>
         <select class="model-select" id="model-select" aria-label="Model"></select>
         <div class="header-actions">
-          <button class="button" id="settings-button" type="button">Settings</button>
           <button class="button" id="history-button" type="button">History</button>
           <button class="button" id="export-button" type="button">Export</button>
+          <button class="button" id="settings-button" type="button">Settings</button>
           <button class="button danger" id="clear-button" type="button">Clear</button>
         </div>
       </header>
@@ -38,6 +38,34 @@
       <div class="history-list" id="history-list"></div>
       <div class="history-footer">
         <button class="button primary" id="new-chat" type="button">New Chat</button>
+      </div>
+    </aside>
+    <aside class="mini-settings" id="mini-settings">
+      <div class="history-header">
+        <div class="history-title">Quick Settings</div>
+        <button class="button" id="mini-close" type="button">Close</button>
+      </div>
+      <div class="mini-body">
+        <label class="mini-label">
+          API Key
+          <input type="password" id="mini-api-key" />
+        </label>
+        <label class="mini-label">
+          API Endpoint
+          <input type="text" id="mini-api-url" />
+        </label>
+        <label class="mini-label">
+          Model
+          <select id="mini-model-select"></select>
+        </label>
+        <label class="mini-label">
+          Add model
+          <input type="text" id="mini-model-input" />
+        </label>
+      </div>
+      <div class="history-footer">
+        <button class="button primary" id="mini-save" type="button">Save</button>
+        <button class="button" id="mini-more" type="button">More settings</button>
       </div>
     </aside>
     <script src="panel.js"></script>

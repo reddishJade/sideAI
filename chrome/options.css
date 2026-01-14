@@ -54,6 +54,9 @@ body {
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 h1 {
@@ -63,7 +66,7 @@ h1 {
 
 label {
   display: block;
-  margin-top: 16px;
+  margin-top: 12px;
   font-size: 13px;
   color: var(--muted);
 }
@@ -138,4 +141,40 @@ button:hover {
   margin-top: 20px;
   font-size: 12px;
   color: var(--muted);
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  background: var(--panel);
+}
+
+.theme-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.theme-toggle button.active {
+  background: var(--accent);
+  color: #ffffff;
 }

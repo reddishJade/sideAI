@@ -5,7 +5,7 @@ const apiKeyEl = document.getElementById("api-key");
 const apiUrlEl = document.getElementById("api-url");
 const modelEl = document.getElementById("model");
 const modelsEl = document.getElementById("models");
-const themeEl = document.getElementById("theme");
+const themeToggle = document.getElementById("theme-toggle");
 const temperatureEl = document.getElementById("temperature");
 const maxTokensEl = document.getElementById("max-tokens");
 const topPEl = document.getElementById("top-p");
@@ -35,6 +35,11 @@ function setStatus(text) {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
+  if (themeToggle) {
+    [...themeToggle.querySelectorAll("button")].forEach((button) => {
+      button.classList.toggle("active", button.dataset.theme === (theme || "auto"));
+    });
+  }
 }
 
 async function loadSettings() {
@@ -55,7 +60,7 @@ async function loadSettings() {
   apiUrlEl.value = data.apiUrl || "";
   modelEl.value = data.model || "";
   modelsEl.value = data.models || "";
-  themeEl.value = data.theme || "auto";
+  applyTheme(data.theme || "auto");
   temperatureEl.value = data.temperature ?? "";
   maxTokensEl.value = data.maxTokens ?? "";
   topPEl.value = data.topP ?? "";
@@ -70,7 +75,8 @@ async function saveSettings() {
   const apiUrl = apiUrlEl.value.trim();
   const model = modelEl.value.trim();
   const models = modelsEl.value.trim();
-  const theme = themeEl.value || "auto";
+  const themeButton = themeToggle?.querySelector("button.active");
+  const theme = themeButton?.dataset.theme || "auto";
   const temperature = temperatureEl.value.trim();
   const maxTokens = maxTokensEl.value.trim();
   const topP = topPEl.value.trim();
@@ -97,5 +103,14 @@ async function saveSettings() {
 }
 
 saveButton.addEventListener("click", saveSettings);
+if (themeToggle) {
+  themeToggle.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) {
+      return;
+    }
+    applyTheme(button.dataset.theme);
+  });
+}
 
 loadSettings();

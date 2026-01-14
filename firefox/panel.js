@@ -14,6 +14,14 @@ const historyList = document.getElementById("history-list");
 const historyClose = document.getElementById("history-close");
 const newChatButton = document.getElementById("new-chat");
 const historySearch = document.getElementById("history-search");
+const miniSettings = document.getElementById("mini-settings");
+const miniClose = document.getElementById("mini-close");
+const miniApiKey = document.getElementById("mini-api-key");
+const miniApiUrl = document.getElementById("mini-api-url");
+const miniModelSelect = document.getElementById("mini-model-select");
+const miniModelInput = document.getElementById("mini-model-input");
+const miniSave = document.getElementById("mini-save");
+const miniMore = document.getElementById("mini-more");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -385,6 +393,37 @@ function exportMarkdown() {
   URL.revokeObjectURL(url);
 }
 
+function openMiniSettings() {
+  historyPanel.classList.remove("open");
+  miniSettings.classList.add("open");
+}
+
+function closeMiniSettings() {
+  miniSettings.classList.remove("open");
+}
+
+function applyMiniModelOptions(models, activeModel) {
+  miniModelSelect.innerHTML = "";
+  if (models.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "\u8bf7\u5148\u6dfb\u52a0\u6a21\u578b";
+    option.disabled = true;
+    option.selected = true;
+    miniModelSelect.appendChild(option);
+    return;
+  }
+  models.forEach((model) => {
+    const option = document.createElement("option");
+    option.value = model;
+    option.textContent = model;
+    miniModelSelect.appendChild(option);
+  });
+  if (activeModel && models.includes(activeModel)) {
+    miniModelSelect.value = activeModel;
+  }
+}
+
 async function loadSettings() {
   const data = await getStorage({
     apiKey: "",
@@ -424,6 +463,9 @@ async function loadSettings() {
   }
   settings.activeModel = resolvedActive;
   applyModelOptions(availableModels, resolvedActive, Boolean(settings.apiKey && settings.apiUrl));
+  miniApiKey.value = settings.apiKey || "";
+  miniApiUrl.value = settings.apiUrl || "";
+  applyMiniModelOptions(availableModels, resolvedActive);
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);
@@ -520,7 +562,7 @@ async function sendMessage() {
 
   if (!settings || !settings.apiKey || !settings.apiUrl) {
     setStatus("Missing API settings", true);
-    openOptions();
+    openMiniSettings();
     return;
   }
   if (!settings.activeModel) {
@@ -624,16 +666,40 @@ promptEl.addEventListener("keydown", (event) => {
 
 sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
-settingsButton.addEventListener("click", openOptions);
+settingsButton.addEventListener("click", openMiniSettings);
 historyClose.addEventListener("click", () => historyPanel.classList.remove("open"));
 newChatButton.addEventListener("click", () => {
   createConversation();
   historyPanel.classList.remove("open");
 });
-historyButton.addEventListener("click", () => historyPanel.classList.add("open"));
+historyButton.addEventListener("click", () => historyPanel.classList.toggle("open"));
 historySearch.addEventListener("input", () => {
   historyFilter = historySearch.value;
   renderHistoryList();
+});
+miniClose.addEventListener("click", closeMiniSettings);
+miniMore.addEventListener("click", openOptions);
+miniSave.addEventListener("click", async () => {
+  const apiKey = miniApiKey.value.trim();
+  const apiUrl = miniApiUrl.value.trim();
+  const modelInput = miniModelInput.value.trim();
+  let models = parseModels(settings?.models || "", settings?.model || "");
+  if (modelInput && !models.includes(modelInput)) {
+    models = [modelInput, ...models];
+  }
+  const picked = miniModelSelect.value;
+  const activeModel = modelInput || (picked && models.includes(picked) ? picked : "");
+
+  await setStorage({
+    apiKey,
+    apiUrl,
+    models: models.join(", "),
+    activeModel,
+    model: models[0] || modelInput || "",
+  });
+  miniModelInput.value = "";
+  closeMiniSettings();
+  loadSettings();
 });
 modelSelect.addEventListener("change", () => {
   const selected = modelSelect.value;
@@ -647,7 +713,13 @@ modelSelect.addEventListener("change", () => {
 modelSelect.addEventListener("mousedown", (event) => {
   if (!settings || !settings.apiKey || !settings.apiUrl || availableModels.length === 0) {
     event.preventDefault();
-    openOptions();
+    openMiniSettings();
+  }
+});
+modelSelect.addEventListener("click", (event) => {
+  if (!settings || !settings.apiKey || !settings.apiUrl || availableModels.length === 0) {
+    event.preventDefault();
+    openMiniSettings();
   }
 });
 exportButton.addEventListener("click", exportMarkdown);

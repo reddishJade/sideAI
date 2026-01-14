@@ -217,7 +217,7 @@ body {
   position: fixed;
   top: 64px;
   right: 14px;
-  bottom: 86px;
+  bottom: 120px;
   width: min(300px, 86vw);
   background: var(--panel);
   border: 1px solid var(--border);
@@ -329,4 +329,54 @@ body {
 .history-footer {
   border-top: 1px solid var(--border);
   padding-top: 12px;
+}
+
+.mini-settings {
+  position: fixed;
+  top: 80px;
+  right: 14px;
+  width: min(320px, 90vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 14;
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.mini-settings.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mini-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mini-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mini-label input,
+.mini-label select {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  font-size: 13px;
+  background: var(--panel);
+  color: var(--text);
 }

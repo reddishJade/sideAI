@@ -8,6 +8,11 @@ const clearButton = document.getElementById("clear-button");
 const settingsButton = document.getElementById("settings-button");
 const modelSelect = document.getElementById("model-select");
 const exportButton = document.getElementById("export-button");
+const historyButton = document.getElementById("history-button");
+const historyPanel = document.getElementById("history-panel");
+const historyList = document.getElementById("history-list");
+const historyClose = document.getElementById("history-close");
+const newChatButton = document.getElementById("new-chat");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -15,6 +20,8 @@ let settings = null;
 let isSending = false;
 let availableModels = [];
 const MAX_HISTORY = 100;
+let conversations = [];
+let activeConversationId = "";
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -77,7 +84,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (!hasApi) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "No models";
+    option.textContent = "\u65e0\u53ef\u7528\u6a21\u578b";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -87,7 +94,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (models.length === 0) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "Please set models";
+    option.textContent = "\u8bf7\u5148\u8bbe\u7f6e\u6a21\u578b";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -97,7 +104,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (!activeModel) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "Please select model";
+    option.textContent = "\u8bf7\u9009\u62e9\u6a21\u578b";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -125,16 +132,7 @@ function addMessage(role, content, isError = false) {
   return messageEl;
 }
 
-function clearChat() {
-  history = [];
-  chatEl.innerHTML = "";
-  setStatus("Conversation cleared");
-  setLocalStorage({ history: [] });
-}
-
-async function loadHistory() {
-  const data = await getLocalStorage({ history: [] });
-  history = Array.isArray(data.history) ? data.history : [];
+function renderChat() {
   chatEl.innerHTML = "";
   history.forEach((message) => {
     if (message?.role && message?.content) {
@@ -143,9 +141,164 @@ async function loadHistory() {
   });
 }
 
-function persistHistory() {
-  if (history.length > MAX_HISTORY) {
-    history = history.slice(history.length - MAX_HISTORY);
+function buildTitle(messages) {
+  const firstUser = messages.find((message) => message.role === "user");
+  if (!firstUser || !firstUser.content) {
+    return "New chat";
+  }
+  return firstUser.content.slice(0, 36);
+}
+
+function getConversation(id) {
+  return conversations.find((conversation) => conversation.id === id);
+}
+
+function clearChat() {
+  history = [];
+  chatEl.innerHTML = "";
+  setStatus("Conversation cleared");
+  const conversation = getConversation(activeConversationId);
+  if (conversation) {
+    conversation.messages = [];
+    conversation.title = "New chat";
+    conversation.updatedAt = Date.now();
+    persistConversations();
+  }
+}
+
+function createConversation() {
+  const id = `chat_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+  const now = Date.now();
+  const conversation = {
+    id,
+    title: "New chat",
+    messages: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  conversations.unshift(conversation);
+  activeConversationId = id;
+  history = conversation.messages;
+  persistConversations();
+  renderHistoryList();
+  renderChat();
+}
+
+function persistConversations() {
+  conversations.forEach((conversation) => {
+    if (conversation.messages.length > MAX_HISTORY) {
+      conversation.messages = conversation.messages.slice(
+        conversation.messages.length - MAX_HISTORY
+      );
+    }
+  });
+  setLocalStorage({ conversations, activeConversationId });
+}
+
+async function loadConversations() {
+  const data = await getLocalStorage({
+    conversations: [],
+    activeConversationId: "",
+    history: [],
+  });
+  conversations = Array.isArray(data.conversations) ? data.conversations : [];
+  activeConversationId = data.activeConversationId || "";
+
+  if (conversations.length === 0 && Array.isArray(data.history) && data.history.length > 0) {
+    const now = Date.now();
+    const migrated = {
+      id: `chat_${now}`,
+      title: buildTitle(data.history),
+      messages: data.history,
+      createdAt: now,
+      updatedAt: now,
+    };
+    conversations = [migrated];
+    activeConversationId = migrated.id;
+  }
+
+  if (!activeConversationId || !getConversation(activeConversationId)) {
+    if (conversations.length > 0) {
+      activeConversationId = conversations[0].id;
+    } else {
+      createConversation();
+      return;
+    }
+  }
+
+  const conversation = getConversation(activeConversationId);
+  history = conversation ? conversation.messages : [];
+  renderHistoryList();
+  renderChat();
+  persistConversations();
+}
+
+function setActiveConversation(id) {
+  const conversation = getConversation(id);
+  if (!conversation) {
+    return;
+  }
+  activeConversationId = id;
+  history = conversation.messages;
+  renderChat();
+  renderHistoryList();
+  persistConversations();
+}
+
+function renderHistoryList() {
+  historyList.innerHTML = "";
+  conversations.forEach((conversation) => {
+    const item = document.createElement("div");
+    item.className = "history-item";
+    if (conversation.id === activeConversationId) {
+      item.classList.add("active");
+    }
+
+    const title = document.createElement("div");
+    title.className = "history-item-title";
+    title.textContent = conversation.title || "New chat";
+
+    const meta = document.createElement("div");
+    meta.className = "history-item-meta";
+    meta.textContent = conversation.updatedAt
+      ? new Date(conversation.updatedAt).toLocaleString()
+      : "Just now";
+
+    const actions = document.createElement("div");
+    actions.className = "history-item-actions";
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Delete";
+    actions.appendChild(remove);
+
+    item.appendChild(title);
+    item.appendChild(meta);
+    item.appendChild(actions);
+    historyList.appendChild(item);
+
+    item.addEventListener("click", (event) => {
+      if (event.target === remove) {
+        return;
+      }
+      setActiveConversation(conversation.id);
+      historyPanel.classList.add("hidden");
+    });
+
+    remove.addEventListener("click", () => {
+      conversations = conversations.filter((entry) => entry.id !== conversation.id);
+      if (conversation.id === activeConversationId) {
+        if (conversations.length > 0) {
+          activeConversationId = conversations[0].id;
+        } else {
+          activeConversationId = "";
+          createConversation();
+          return;
+        }
+      }
+      setActiveConversation(activeConversationId);
+    });
+  });
+}
   }
   setLocalStorage({ history });
 }
@@ -223,7 +376,7 @@ async function loadSettings() {
     resolvedActive = availableModels[0];
   }
   settings.activeModel = resolvedActive;
-  applyModelOptions(availableModels, resolvedActive, Boolean(settings.apiKey));
+  applyModelOptions(availableModels, resolvedActive, Boolean(settings.apiKey && settings.apiUrl));
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);
@@ -334,7 +487,14 @@ async function sendMessage() {
   promptEl.value = "";
   addMessage("user", text);
   history.push({ role: "user", content: text });
-  persistHistory();
+  const conversation = getConversation(activeConversationId);
+  if (conversation) {
+    conversation.messages = history;
+    conversation.title = buildTitle(history);
+    conversation.updatedAt = Date.now();
+    persistConversations();
+    renderHistoryList();
+  }
 
   setStatus("Thinking...");
 
@@ -390,7 +550,12 @@ async function sendMessage() {
     }
 
     history.push({ role: "assistant", content: assistantMessage });
-    persistHistory();
+    if (conversation) {
+      conversation.messages = history;
+      conversation.updatedAt = Date.now();
+      persistConversations();
+      renderHistoryList();
+    }
     setStatus("Ready");
   } catch (error) {
     const message = error?.message || "Request failed";
@@ -413,6 +578,12 @@ promptEl.addEventListener("keydown", (event) => {
 sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
 settingsButton.addEventListener("click", openOptions);
+historyButton.addEventListener("click", () => historyPanel.classList.remove("hidden"));
+historyClose.addEventListener("click", () => historyPanel.classList.add("hidden"));
+newChatButton.addEventListener("click", () => {
+  createConversation();
+  historyPanel.classList.add("hidden");
+});
 modelSelect.addEventListener("change", () => {
   const selected = modelSelect.value;
   if (!selected) {
@@ -423,7 +594,7 @@ modelSelect.addEventListener("change", () => {
   modelSelect.classList.remove("empty");
 });
 modelSelect.addEventListener("mousedown", (event) => {
-  if (!settings || !settings.apiKey || availableModels.length === 0) {
+  if (!settings || !settings.apiKey || !settings.apiUrl || availableModels.length === 0) {
     event.preventDefault();
     openOptions();
   }
@@ -431,7 +602,7 @@ modelSelect.addEventListener("mousedown", (event) => {
 exportButton.addEventListener("click", exportMarkdown);
 
 loadSettings();
-loadHistory();
+loadConversations();
 
 if (ext.storage?.onChanged) {
   ext.storage.onChanged.addListener((changes, area) => {

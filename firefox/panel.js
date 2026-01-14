@@ -72,6 +72,7 @@ function addMessage(role, content, isError = false) {
   messageEl.textContent = content;
   chatEl.appendChild(messageEl);
   chatEl.scrollTop = chatEl.scrollHeight;
+  return messageEl;
 }
 
 function clearChat() {
@@ -93,6 +94,7 @@ async function loadSettings() {
     topP: "",
     presencePenalty: "",
     frequencyPenalty: "",
+    stream: true,
   });
   settings = {
     apiKey: (data.apiKey || "").trim(),
@@ -106,6 +108,7 @@ async function loadSettings() {
     topP: parseNumber(data.topP),
     presencePenalty: parseNumber(data.presencePenalty),
     frequencyPenalty: parseNumber(data.frequencyPenalty),
+    stream: data.stream !== false,
   };
   applyTheme(settings.theme);
   const modelList = parseModels(settings.models, settings.model);
@@ -129,6 +132,76 @@ function openOptions() {
   if (ext.runtime.getURL) {
     window.open(ext.runtime.getURL("options.html"));
   }
+}
+
+async function streamChatCompletion(requestBody) {
+  const response = await fetch(settings.apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${settings.apiKey}`,
+    },
+    body: JSON.stringify({ ...requestBody, stream: true }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  if (!response.body) {
+    throw new Error("Streaming not supported by this response");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let assistantText = "";
+  const assistantEl = addMessage("assistant", "");
+  let done = false;
+
+  while (!done) {
+    const { value, done: streamDone } = await reader.read();
+    if (streamDone) {
+      break;
+    }
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n\n");
+    buffer = parts.pop() || "";
+
+    for (const part of parts) {
+      const lines = part.split("\n");
+      for (const line of lines) {
+        if (!line.startsWith("data:")) {
+          continue;
+        }
+        const data = line.replace("data:", "").trim();
+        if (!data) {
+          continue;
+        }
+        if (data === "[DONE]") {
+          done = true;
+          break;
+        }
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed?.choices?.[0]?.delta?.content;
+          if (delta) {
+            assistantText += delta;
+            assistantEl.textContent = assistantText;
+            chatEl.scrollTop = chatEl.scrollHeight;
+          }
+        } catch (error) {
+          // Ignore malformed chunks.
+        }
+      }
+      if (done) {
+        break;
+      }
+    }
+  }
+
+  return assistantText.trim();
 }
 
 async function sendMessage() {
@@ -172,29 +245,37 @@ async function sendMessage() {
       requestBody.frequency_penalty = settings.frequencyPenalty;
     }
 
-    const response = await fetch(settings.apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${settings.apiKey}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
+    let assistantMessage = "";
+    if (settings.stream) {
+      setStatus("Streaming...");
+      assistantMessage = await streamChatCompletion(requestBody);
+    } else {
+      const response = await fetch(settings.apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${settings.apiKey}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || `HTTP ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      assistantMessage = data?.choices?.[0]?.message?.content?.trim() || "";
+      if (assistantMessage) {
+        addMessage("assistant", assistantMessage);
+      }
     }
-
-    const data = await response.json();
-    const assistantMessage = data?.choices?.[0]?.message?.content?.trim();
 
     if (!assistantMessage) {
       throw new Error("Empty response from API");
     }
 
     history.push({ role: "assistant", content: assistantMessage });
-    addMessage("assistant", assistantMessage);
     setStatus("Ready");
   } catch (error) {
     const message = error?.message || "Request failed";

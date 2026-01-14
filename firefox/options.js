@@ -11,6 +11,7 @@ const maxTokensEl = document.getElementById("max-tokens");
 const topPEl = document.getElementById("top-p");
 const presencePenaltyEl = document.getElementById("presence-penalty");
 const frequencyPenaltyEl = document.getElementById("frequency-penalty");
+const streamEl = document.getElementById("stream");
 const saveButton = document.getElementById("save");
 const statusEl = document.getElementById("status");
 
@@ -48,6 +49,7 @@ async function loadSettings() {
     topP: "",
     presencePenalty: "",
     frequencyPenalty: "",
+    stream: true,
   });
   apiKeyEl.value = data.apiKey || "";
   apiUrlEl.value = data.apiUrl || "";
@@ -59,6 +61,7 @@ async function loadSettings() {
   topPEl.value = data.topP ?? "";
   presencePenaltyEl.value = data.presencePenalty ?? "";
   frequencyPenaltyEl.value = data.frequencyPenalty ?? "";
+  streamEl.checked = data.stream !== false;
   applyTheme(themeEl.value);
 }
 
@@ -73,6 +76,7 @@ async function saveSettings() {
   const topP = topPEl.value.trim();
   const presencePenalty = presencePenaltyEl.value.trim();
   const frequencyPenalty = frequencyPenaltyEl.value.trim();
+  const stream = streamEl.checked;
 
   await setStorage({
     apiKey,
@@ -85,6 +89,7 @@ async function saveSettings() {
     topP,
     presencePenalty,
     frequencyPenalty,
+    stream,
   });
   setStatus("Saved");
   setTimeout(() => setStatus(""), 1500);

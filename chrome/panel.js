@@ -41,16 +41,16 @@ let miniModels = [];
 
 function getStorage(keys) {
   if (isBrowser) {
-    return browser.storage.sync.get(keys);
+    return browser.storage.local.get(keys);
   }
-  return new Promise((resolve) => chrome.storage.sync.get(keys, resolve));
+  return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
 }
 
 function setStorage(values) {
   if (isBrowser) {
-    return browser.storage.sync.set(values);
+    return browser.storage.local.set(values);
   }
-  return new Promise((resolve) => chrome.storage.sync.set(values, resolve));
+  return new Promise((resolve) => chrome.storage.local.set(values, resolve));
 }
 
 function getLocalStorage(keys) {
@@ -836,7 +836,7 @@ loadConversations();
 
 if (ext.storage?.onChanged) {
   ext.storage.onChanged.addListener((changes, area) => {
-    if (area === "sync") {
+    if (area === "local") {
       loadSettings();
     }
   });

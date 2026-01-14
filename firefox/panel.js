@@ -24,6 +24,8 @@ const miniModelInput = document.getElementById("mini-model-input");
 const miniModelAdd = document.getElementById("mini-model-add");
 const miniSave = document.getElementById("mini-save");
 const miniMore = document.getElementById("mini-more");
+const miniVerify = document.getElementById("mini-verify");
+const miniStatus = document.getElementById("mini-status");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -455,6 +457,27 @@ function applyMiniModelOptions(models, activeModel) {
   }
 }
 
+async function verifyApi(apiKey, apiUrl, model) {
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: "ping" }],
+      max_tokens: 1,
+      temperature: 0,
+    }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+  return true;
+}
+
 async function loadSettings() {
   const data = await getStorage({
     apiKey: "",
@@ -740,6 +763,22 @@ miniModelAdd.addEventListener("click", () => {
   }
   miniModelInput.value = "";
   applyMiniModelOptions(miniModels, value);
+});
+miniVerify.addEventListener("click", async () => {
+  const apiKey = miniApiKey.value.trim();
+  const apiUrl = miniApiUrl.value.trim();
+  const model = miniModelSelect.value || miniModelInput.value.trim();
+  if (!apiKey || !apiUrl || !model) {
+    miniStatus.textContent = "Add API key, endpoint, and model first.";
+    return;
+  }
+  miniStatus.textContent = "Verifying...";
+  try {
+    await verifyApi(apiKey, apiUrl, model);
+    miniStatus.textContent = "API verified.";
+  } catch (error) {
+    miniStatus.textContent = "Verification failed.";
+  }
 });
 modelSelect.addEventListener("change", () => {
   const selected = modelSelect.value;

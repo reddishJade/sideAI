@@ -354,6 +354,15 @@ body {
 .history-footer {
   border-top: 1px solid var(--border);
   padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mini-status {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .mini-settings {

@@ -11,6 +11,8 @@ const topPEl = document.getElementById("top-p");
 const presencePenaltyEl = document.getElementById("presence-penalty");
 const frequencyPenaltyEl = document.getElementById("frequency-penalty");
 const streamEl = document.getElementById("stream");
+const verifyButton = document.getElementById("verify-api");
+const verifyStatus = document.getElementById("verify-status");
 const saveButton = document.getElementById("save");
 const statusEl = document.getElementById("status");
 
@@ -34,6 +36,27 @@ function setStatus(text) {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
+}
+
+async function verifyApi(apiKey, apiUrl, model) {
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: "ping" }],
+      max_tokens: 1,
+      temperature: 0,
+    }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+  return true;
 }
 
 async function loadSettings() {
@@ -95,5 +118,21 @@ async function saveSettings() {
 }
 
 saveButton.addEventListener("click", saveSettings);
+verifyButton.addEventListener("click", async () => {
+  const apiKey = apiKeyEl.value.trim();
+  const apiUrl = apiUrlEl.value.trim();
+  const model = modelEl.value.trim();
+  if (!apiKey || !apiUrl || !model) {
+    verifyStatus.textContent = "Fill API key, endpoint, and model first.";
+    return;
+  }
+  verifyStatus.textContent = "Verifying...";
+  try {
+    await verifyApi(apiKey, apiUrl, model);
+    verifyStatus.textContent = "API verified.";
+  } catch (error) {
+    verifyStatus.textContent = "Verification failed.";
+  }
+});
 
 loadSettings();

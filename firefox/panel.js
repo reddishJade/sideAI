@@ -38,7 +38,20 @@ let activeConversationId = "";
 let historyFilter = "";
 const themeOrder = ["auto", "light", "dark"];
 let miniModels = [];
-const markdown = window.SideAiMarkdown;
+
+function fallbackEscape(value) {
+  return (value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const markdown = window.SideAiMarkdown || {
+  renderMarkdown: (value) => fallbackEscape(value || "").replace(/\n/g, "<br>"),
+  attachCopyHandlers: () => {},
+};
 
 
 function getStorage(keys) {

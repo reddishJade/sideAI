@@ -13,6 +13,7 @@ const historyPanel = document.getElementById("history-panel");
 const historyList = document.getElementById("history-list");
 const historyClose = document.getElementById("history-close");
 const newChatButton = document.getElementById("new-chat");
+const historySearch = document.getElementById("history-search");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -22,6 +23,7 @@ let availableModels = [];
 const MAX_HISTORY = 100;
 let conversations = [];
 let activeConversationId = "";
+let historyFilter = "";
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -175,6 +177,7 @@ function createConversation() {
     messages: [],
     createdAt: now,
     updatedAt: now,
+    pinned: false,
   };
   conversations.unshift(conversation);
   activeConversationId = id;
@@ -212,6 +215,7 @@ async function loadConversations() {
       messages: data.history,
       createdAt: now,
       updatedAt: now,
+      pinned: false,
     };
     conversations = [migrated];
     activeConversationId = migrated.id;
@@ -247,7 +251,26 @@ function setActiveConversation(id) {
 
 function renderHistoryList() {
   historyList.innerHTML = "";
-  conversations.forEach((conversation) => {
+  const term = historyFilter.trim().toLowerCase();
+  const sorted = [...conversations].sort((a, b) => {
+    if (a.pinned && !b.pinned) {
+      return -1;
+    }
+    if (!a.pinned && b.pinned) {
+      return 1;
+    }
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+
+  sorted.forEach((conversation) => {
+    if (term) {
+      const haystack = `${conversation.title || ""} ${conversation.messages?.[0]?.content || ""}`
+        .toLowerCase()
+        .trim();
+      if (!haystack.includes(term)) {
+        return;
+      }
+    }
     const item = document.createElement("div");
     item.className = "history-item";
     if (conversation.id === activeConversationId) {
@@ -266,9 +289,18 @@ function renderHistoryList() {
 
     const actions = document.createElement("div");
     actions.className = "history-item-actions";
+    const pin = document.createElement("button");
+    pin.type = "button";
+    pin.textContent = conversation.pinned ? "Unpin" : "Pin";
+    const rename = document.createElement("button");
+    rename.type = "button";
+    rename.textContent = "Rename";
     const remove = document.createElement("button");
     remove.type = "button";
     remove.textContent = "Delete";
+    remove.className = "danger";
+    actions.appendChild(pin);
+    actions.appendChild(rename);
     actions.appendChild(remove);
 
     item.appendChild(title);
@@ -277,11 +309,29 @@ function renderHistoryList() {
     historyList.appendChild(item);
 
     item.addEventListener("click", (event) => {
-      if (event.target === remove) {
+      if (event.target === remove || event.target === rename || event.target === pin) {
         return;
       }
       setActiveConversation(conversation.id);
-      historyPanel.classList.add("hidden");
+      historyPanel.classList.remove("open");
+    });
+
+    pin.addEventListener("click", () => {
+      conversation.pinned = !conversation.pinned;
+      conversation.updatedAt = Date.now();
+      persistConversations();
+      renderHistoryList();
+    });
+
+    rename.addEventListener("click", () => {
+      const next = window.prompt("Rename conversation", conversation.title || "New chat");
+      if (!next) {
+        return;
+      }
+      conversation.title = next.trim() || "New chat";
+      conversation.updatedAt = Date.now();
+      persistConversations();
+      renderHistoryList();
     });
 
     remove.addEventListener("click", () => {
@@ -575,11 +625,15 @@ promptEl.addEventListener("keydown", (event) => {
 sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
 settingsButton.addEventListener("click", openOptions);
-historyButton.addEventListener("click", () => historyPanel.classList.remove("hidden"));
-historyClose.addEventListener("click", () => historyPanel.classList.add("hidden"));
+historyClose.addEventListener("click", () => historyPanel.classList.remove("open"));
 newChatButton.addEventListener("click", () => {
   createConversation();
-  historyPanel.classList.add("hidden");
+  historyPanel.classList.remove("open");
+});
+historyButton.addEventListener("click", () => historyPanel.classList.add("open"));
+historySearch.addEventListener("input", () => {
+  historyFilter = historySearch.value;
+  renderHistoryList();
 });
 modelSelect.addEventListener("change", () => {
   const selected = modelSelect.value;

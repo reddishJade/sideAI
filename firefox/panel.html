@@ -13,6 +13,7 @@
         <select class="model-select" id="model-select" aria-label="Model"></select>
         <div class="header-actions">
           <button class="button" id="settings-button" type="button">Settings</button>
+          <button class="button" id="history-button" type="button">History</button>
           <button class="button" id="export-button" type="button">Export</button>
           <button class="button danger" id="clear-button" type="button">Clear</button>
         </div>
@@ -26,6 +27,19 @@
         </div>
       </div>
     </div>
+    <aside class="history-panel" id="history-panel">
+      <div class="history-header">
+        <div class="history-title">Conversations</div>
+        <button class="button" id="history-close" type="button">Close</button>
+      </div>
+      <div class="history-search">
+        <input type="text" id="history-search" placeholder="Search conversations" />
+      </div>
+      <div class="history-list" id="history-list"></div>
+      <div class="history-footer">
+        <button class="button primary" id="new-chat" type="button">New Chat</button>
+      </div>
+    </aside>
     <script src="panel.js"></script>
   </body>
 </html>

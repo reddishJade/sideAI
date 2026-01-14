@@ -391,12 +391,17 @@ body {
 .mini-row {
   display: flex;
   gap: 8px;
-  align-items: center;
+  align-items: stretch;
+}
+
+.mini-row input {
+  flex: 1;
 }
 
 .mini-row .button {
   padding: 6px 12px;
   font-size: 12px;
+  min-width: 64px;
 }
 
 .mini-label {

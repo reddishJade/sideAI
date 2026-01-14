@@ -117,7 +117,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (!hasApi) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "\u65e0\u53ef\u7528\u6a21\u578b";
+    option.textContent = "No models available";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -127,7 +127,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (models.length === 0) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "\u8bf7\u5148\u8bbe\u7f6e\u6a21\u578b";
+    option.textContent = "Please set models";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -137,7 +137,7 @@ function applyModelOptions(models, activeModel, hasApi) {
   if (!activeModel) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "\u8bf7\u9009\u62e9\u6a21\u578b";
+    option.textContent = "Please select a model";
     option.disabled = true;
     option.selected = true;
     modelSelect.appendChild(option);
@@ -430,7 +430,7 @@ function applyMiniModelOptions(models, activeModel) {
   if (models.length === 0) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "\u8bf7\u5148\u6dfb\u52a0\u6a21\u578b";
+    option.textContent = "Please add a model";
     option.disabled = true;
     option.selected = true;
     miniModelSelect.appendChild(option);

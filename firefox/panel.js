@@ -7,6 +7,7 @@ const sendButton = document.getElementById("send-button");
 const clearButton = document.getElementById("clear-button");
 const settingsButton = document.getElementById("settings-button");
 const modelSelect = document.getElementById("model-select");
+const exportButton = document.getElementById("export-button");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -113,6 +114,41 @@ function persistHistory() {
     history = history.slice(history.length - MAX_HISTORY);
   }
   setLocalStorage({ history });
+}
+
+function formatTimestamp(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function exportMarkdown() {
+  if (history.length === 0) {
+    setStatus("No messages to export", true);
+    return;
+  }
+  const timestamp = formatTimestamp(new Date());
+  const lines = [`# SideAI Chat - ${timestamp}`];
+  history.forEach((message) => {
+    const role =
+      message.role === "user"
+        ? "User"
+        : message.role === "assistant"
+          ? "Assistant"
+          : message.role || "Message";
+    lines.push(`## ${role}`);
+    lines.push(message.content || "");
+  });
+  const blob = new Blob([lines.join("\n\n")], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `sideai-chat-${timestamp.replace(/[:\\s]/g, "-")}.md`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 async function loadSettings() {
@@ -342,6 +378,7 @@ modelSelect.addEventListener("change", () => {
   settings.activeModel = selected;
   setStorage({ activeModel: selected });
 });
+exportButton.addEventListener("click", exportMarkdown);
 
 loadSettings();
 loadHistory();

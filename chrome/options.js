@@ -4,6 +4,7 @@ const isBrowser = typeof browser !== "undefined";
 const apiKeyEl = document.getElementById("api-key");
 const apiUrlEl = document.getElementById("api-url");
 const modelEl = document.getElementById("model");
+const modelsEl = document.getElementById("models");
 const themeEl = document.getElementById("theme");
 const temperatureEl = document.getElementById("temperature");
 const maxTokensEl = document.getElementById("max-tokens");
@@ -40,6 +41,7 @@ async function loadSettings() {
     apiKey: "",
     apiUrl: "https://api.openai.com/v1/chat/completions",
     model: "gpt-4o-mini",
+    models: "",
     theme: "auto",
     temperature: "",
     maxTokens: "",
@@ -50,6 +52,7 @@ async function loadSettings() {
   apiKeyEl.value = data.apiKey || "";
   apiUrlEl.value = data.apiUrl || "";
   modelEl.value = data.model || "";
+  modelsEl.value = data.models || "";
   themeEl.value = data.theme || "auto";
   temperatureEl.value = data.temperature ?? "";
   maxTokensEl.value = data.maxTokens ?? "";
@@ -63,6 +66,7 @@ async function saveSettings() {
   const apiKey = apiKeyEl.value.trim();
   const apiUrl = apiUrlEl.value.trim();
   const model = modelEl.value.trim();
+  const models = modelsEl.value.trim();
   const theme = themeEl.value || "auto";
   const temperature = temperatureEl.value.trim();
   const maxTokens = maxTokensEl.value.trim();
@@ -74,6 +78,7 @@ async function saveSettings() {
     apiKey,
     apiUrl,
     model,
+    models,
     theme,
     temperature,
     maxTokens,

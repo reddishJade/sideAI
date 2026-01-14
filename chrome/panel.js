@@ -6,6 +6,7 @@ const promptEl = document.getElementById("prompt");
 const sendButton = document.getElementById("send-button");
 const clearButton = document.getElementById("clear-button");
 const settingsButton = document.getElementById("settings-button");
+const modelSelect = document.getElementById("model-select");
 const statusEl = document.getElementById("status");
 
 let history = [];
@@ -17,6 +18,13 @@ function getStorage(keys) {
     return browser.storage.sync.get(keys);
   }
   return new Promise((resolve) => chrome.storage.sync.get(keys, resolve));
+}
+
+function setStorage(values) {
+  if (isBrowser) {
+    return browser.storage.sync.set(values);
+  }
+  return new Promise((resolve) => chrome.storage.sync.set(values, resolve));
 }
 
 function setStatus(text, isError = false) {
@@ -34,6 +42,28 @@ function parseNumber(value) {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
+}
+
+function parseModels(models, fallback) {
+  const list = (models || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (list.length > 0) {
+    return list;
+  }
+  return fallback ? [fallback] : [];
+}
+
+function applyModelOptions(models, activeModel) {
+  modelSelect.innerHTML = "";
+  models.forEach((model) => {
+    const option = document.createElement("option");
+    option.value = model;
+    option.textContent = model;
+    modelSelect.appendChild(option);
+  });
+  modelSelect.value = activeModel || models[0] || "";
 }
 
 function addMessage(role, content, isError = false) {
@@ -55,6 +85,8 @@ async function loadSettings() {
     apiKey: "",
     apiUrl: "https://api.openai.com/v1/chat/completions",
     model: "gpt-4o-mini",
+    models: "",
+    activeModel: "",
     theme: "auto",
     temperature: "",
     maxTokens: "",
@@ -66,6 +98,8 @@ async function loadSettings() {
     apiKey: (data.apiKey || "").trim(),
     apiUrl: (data.apiUrl || "").trim(),
     model: (data.model || "").trim(),
+    models: data.models || "",
+    activeModel: data.activeModel || "",
     theme: data.theme || "auto",
     temperature: parseNumber(data.temperature),
     maxTokens: parseNumber(data.maxTokens),
@@ -74,6 +108,11 @@ async function loadSettings() {
     frequencyPenalty: parseNumber(data.frequencyPenalty),
   };
   applyTheme(settings.theme);
+  const modelList = parseModels(settings.models, settings.model);
+  const resolvedActive =
+    modelList.find((model) => model === settings.activeModel) || modelList[0] || settings.model;
+  settings.activeModel = resolvedActive;
+  applyModelOptions(modelList, resolvedActive);
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);
@@ -114,7 +153,7 @@ async function sendMessage() {
 
   try {
     const requestBody = {
-      model: settings.model,
+      model: settings.activeModel || settings.model,
       messages: history,
     };
     if (settings.temperature !== null) {
@@ -178,6 +217,14 @@ promptEl.addEventListener("keydown", (event) => {
 sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
 settingsButton.addEventListener("click", openOptions);
+modelSelect.addEventListener("change", () => {
+  const selected = modelSelect.value;
+  if (!selected) {
+    return;
+  }
+  settings.activeModel = selected;
+  setStorage({ activeModel: selected });
+});
 
 loadSettings();
 

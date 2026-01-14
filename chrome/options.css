@@ -8,6 +8,32 @@
   --accent: #2274a5;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #161616;
+  --panel: #1f1f1f;
+  --border: #2c2c2c;
+  --text: #f2f2f2;
+  --muted: #b0b0b0;
+  --accent: #7cc0ff;
+}
+
+:root[data-theme="auto"] {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    color-scheme: dark;
+    --bg: #161616;
+    --panel: #1f1f1f;
+    --border: #2c2c2c;
+    --text: #f2f2f2;
+    --muted: #b0b0b0;
+    --accent: #7cc0ff;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -41,7 +67,8 @@ label {
   color: var(--muted);
 }
 
-input {
+input,
+select {
   width: 100%;
   margin-top: 6px;
   padding: 10px 12px;
@@ -50,6 +77,7 @@ input {
   font-size: 14px;
   font-family: inherit;
   color: var(--text);
+  background: var(--panel);
 }
 
 .actions {

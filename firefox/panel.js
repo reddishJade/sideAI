@@ -24,6 +24,10 @@ function setStatus(text, isError = false) {
   statusEl.style.color = isError ? "var(--danger)" : "var(--muted)";
 }
 
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme || "auto";
+}
+
 function addMessage(role, content, isError = false) {
   const messageEl = document.createElement("div");
   messageEl.className = `message ${role}${isError ? " error" : ""}`;
@@ -43,12 +47,15 @@ async function loadSettings() {
     apiKey: "",
     apiUrl: "https://api.openai.com/v1/chat/completions",
     model: "gpt-4o-mini",
+    theme: "auto",
   });
   settings = {
     apiKey: (data.apiKey || "").trim(),
     apiUrl: (data.apiUrl || "").trim(),
     model: (data.model || "").trim(),
+    theme: data.theme || "auto",
   };
+  applyTheme(settings.theme);
 
   if (!settings.apiKey || !settings.apiUrl || !settings.model) {
     setStatus("Set API settings before chatting", true);

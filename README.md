@@ -19,7 +19,7 @@ Run:
 This creates `dist/chrome.zip` and `dist/firefox.zip`.
 
 ## Release via GitHub tags
-Push a tag like `v0.1.0` and GitHub Actions will publish a Release with the two zip assets.
+Push a tag like `v0.1.0` and GitHub Actions will publish a Release with the zip assets, auto-generated release notes, and a `checksums.txt` file.
 
 ```bash
 git tag v0.1.0

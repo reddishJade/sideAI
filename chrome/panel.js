@@ -84,6 +84,23 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
 }
 
+function normalizeApiUrl(inputUrl) {
+  const raw = (inputUrl || "").trim();
+  if (!raw) {
+    return "";
+  }
+  if (raw.includes("/chat/completions")) {
+    return raw;
+  }
+  if (raw.endsWith("/v1")) {
+    return `${raw}/chat/completions`;
+  }
+  if (raw.endsWith("/")) {
+    return `${raw}v1/chat/completions`;
+  }
+  return `${raw}/v1/chat/completions`;
+}
+
 function themeIcon(theme) {
   switch (theme) {
     case "light":
@@ -458,7 +475,8 @@ function applyMiniModelOptions(models, activeModel) {
 }
 
 async function verifyApi(apiKey, apiUrl, model) {
-  const response = await fetch(apiUrl, {
+  const resolvedUrl = normalizeApiUrl(apiUrl);
+  const response = await fetch(resolvedUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -495,7 +513,7 @@ async function loadSettings() {
   });
   settings = {
     apiKey: (data.apiKey || "").trim(),
-    apiUrl: (data.apiUrl || "").trim(),
+    apiUrl: normalizeApiUrl(data.apiUrl || ""),
     model: (data.model || "").trim(),
     models: data.models || "",
     activeModel: data.activeModel || "",
@@ -541,7 +559,7 @@ function openOptions() {
 }
 
 async function streamChatCompletion(requestBody) {
-  const response = await fetch(settings.apiUrl, {
+    const response = await fetch(settings.apiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -737,7 +755,7 @@ miniClose.addEventListener("click", closeMiniSettings);
 miniMore.addEventListener("click", openOptions);
 miniSave.addEventListener("click", async () => {
   const apiKey = miniApiKey.value.trim();
-  const apiUrl = miniApiUrl.value.trim();
+  const apiUrl = normalizeApiUrl(miniApiUrl.value.trim());
   const models = [...miniModels];
   const picked = miniModelSelect.value;
   const activeModel = picked && models.includes(picked) ? picked : "";
@@ -750,6 +768,7 @@ miniSave.addEventListener("click", async () => {
     model: models[0] || "",
   });
   miniModelInput.value = "";
+  miniApiUrl.value = apiUrl;
   closeMiniSettings();
   loadSettings();
 });

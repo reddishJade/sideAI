@@ -38,8 +38,26 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
 }
 
+function normalizeApiUrl(inputUrl) {
+  const raw = (inputUrl || "").trim();
+  if (!raw) {
+    return "";
+  }
+  if (raw.includes("/chat/completions")) {
+    return raw;
+  }
+  if (raw.endsWith("/v1")) {
+    return `${raw}/chat/completions`;
+  }
+  if (raw.endsWith("/")) {
+    return `${raw}v1/chat/completions`;
+  }
+  return `${raw}/v1/chat/completions`;
+}
+
 async function verifyApi(apiKey, apiUrl, model) {
-  const response = await fetch(apiUrl, {
+  const resolvedUrl = normalizeApiUrl(apiUrl);
+  const response = await fetch(resolvedUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -88,7 +106,7 @@ async function loadSettings() {
 
 async function saveSettings() {
   const apiKey = apiKeyEl.value.trim();
-  const apiUrl = apiUrlEl.value.trim();
+  const apiUrl = normalizeApiUrl(apiUrlEl.value.trim());
   const model = modelEl.value.trim();
   const models = modelsEl.value.trim();
   const theme = document.documentElement.dataset.theme || "auto";
@@ -112,6 +130,7 @@ async function saveSettings() {
     frequencyPenalty,
     stream,
   });
+  apiUrlEl.value = apiUrl;
   setStatus("Saved");
   setTimeout(() => setStatus(""), 1500);
   applyTheme(theme);

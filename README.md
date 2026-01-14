@@ -10,7 +10,7 @@ Minimal sidebar AI chat extension for Chrome and Firefox using OpenAI-compatible
 ## Load in Firefox
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Click "Load Temporary Add-on".
-3. Select `extension/manifest.firefox.json`.
+3. Rename `extension/manifest.firefox.json` to `extension/manifest.json` and select that file.
 
 ## Configure
 Open the extension settings page and set:

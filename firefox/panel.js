@@ -73,6 +73,17 @@ function parseModels(models, fallback) {
 
 function applyModelOptions(models, activeModel) {
   modelSelect.innerHTML = "";
+  if (models.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Set API & models";
+    option.disabled = true;
+    option.selected = true;
+    modelSelect.appendChild(option);
+    modelSelect.classList.add("empty");
+    return;
+  }
+  modelSelect.classList.remove("empty");
   models.forEach((model) => {
     const option = document.createElement("option");
     option.value = model;
@@ -377,6 +388,12 @@ modelSelect.addEventListener("change", () => {
   }
   settings.activeModel = selected;
   setStorage({ activeModel: selected });
+});
+modelSelect.addEventListener("mousedown", (event) => {
+  if (!settings || modelSelect.classList.contains("empty")) {
+    event.preventDefault();
+    openOptions();
+  }
 });
 exportButton.addEventListener("click", exportMarkdown);
 

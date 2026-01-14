@@ -40,7 +40,8 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: radial-gradient(circle at top, rgba(34, 116, 165, 0.08), transparent 55%),
+    var(--bg);
   color: var(--text);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -69,6 +70,7 @@ label {
 
 label input[type="checkbox"] {
   margin-right: 8px;
+  accent-color: var(--accent);
 }
 
 input,
@@ -84,6 +86,12 @@ select {
   background: var(--panel);
 }
 
+input:focus,
+select:focus {
+  outline: 2px solid rgba(34, 116, 165, 0.25);
+  outline-offset: 1px;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -93,12 +101,18 @@ select {
 
 button {
   border: 1px solid var(--accent);
-  background: #fff;
-  color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
   padding: 8px 14px;
   border-radius: 999px;
   cursor: pointer;
   font-size: 13px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
 #status {

@@ -280,6 +280,22 @@ async function loadConversations() {
     }
   }
 
+  let current = getConversation(activeConversationId);
+  if (!current && conversations.length === 0) {
+    createConversation();
+    return;
+  }
+  if (!current && conversations.length > 0) {
+    activeConversationId = conversations[0].id;
+    current = getConversation(activeConversationId);
+  }
+  if (current && (!current.messages || current.messages.length === 0)) {
+    history = current.messages || [];
+    renderHistoryList();
+    renderChat();
+    persistConversations();
+    return;
+  }
   createConversation();
 }
 

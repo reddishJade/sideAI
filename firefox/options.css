@@ -154,27 +154,3 @@ button:hover {
   text-transform: uppercase;
   color: var(--muted);
 }
-
-.theme-toggle {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px;
-  gap: 4px;
-  background: var(--panel);
-}
-
-.theme-toggle button {
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.theme-toggle button.active {
-  background: var(--accent);
-  color: #ffffff;
-}

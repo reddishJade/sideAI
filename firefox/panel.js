@@ -14,6 +14,7 @@ const historyList = document.getElementById("history-list");
 const historyClose = document.getElementById("history-close");
 const newChatButton = document.getElementById("new-chat");
 const historySearch = document.getElementById("history-search");
+const themeToggle = document.getElementById("theme-toggle");
 const miniSettings = document.getElementById("mini-settings");
 const miniClose = document.getElementById("mini-close");
 const miniApiKey = document.getElementById("mini-api-key");
@@ -32,6 +33,7 @@ const MAX_HISTORY = 100;
 let conversations = [];
 let activeConversationId = "";
 let historyFilter = "";
+const themeOrder = ["auto", "light", "dark"];
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -76,6 +78,25 @@ function parseNumber(value) {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
+}
+
+function themeIcon(theme) {
+  switch (theme) {
+    case "light":
+      return "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4.5a1 1 0 0 1 1 1V7a1 1 0 0 1-2 0V5.5a1 1 0 0 1 1-1ZM12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm7-5a1 1 0 0 1 1-1h1.5a1 1 0 0 1 0 2H20a1 1 0 0 1-1-1ZM3.5 11H5a1 1 0 0 1 0 2H3.5a1 1 0 0 1 0-2Zm12.02-6.52a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41ZM6.19 16.89a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41Zm11.25-.88a1 1 0 0 1 0 1.41l-.88.88a1 1 0 1 1-1.41-1.41l.88-.88a1 1 0 0 1 1.41 0ZM7.48 5.36a1 1 0 0 1 0 1.41l-.88.88A1 1 0 1 1 5.19 6.24l.88-.88a1 1 0 0 1 1.41 0Z\"/></svg>";
+    case "dark":
+      return "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20.6 15.3a1 1 0 0 0-1.2-.2 7.5 7.5 0 0 1-10.5-10.5 1 1 0 0 0-.2-1.2 1 1 0 0 0-1.1-.2A9.5 9.5 0 1 0 20.8 16.4a1 1 0 0 0-.2-1.1Z\"/></svg>";
+    default:
+      return "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2a9.5 9.5 0 1 0 9.5 9.5A9.5 9.5 0 0 0 12 2Zm0 17a7.5 7.5 0 1 1 7.5-7.5A7.5 7.5 0 0 1 12 19Zm0-12a4.5 4.5 0 0 0 0 9V7Z\"/></svg>";
+  }
+}
+
+function updateThemeToggle(theme) {
+  if (!themeToggle) {
+    return;
+  }
+  themeToggle.innerHTML = themeIcon(theme || "auto");
+  themeToggle.dataset.theme = theme || "auto";
 }
 
 function parseModels(models, fallback) {
@@ -454,6 +475,7 @@ async function loadSettings() {
     stream: data.stream !== false,
   };
   applyTheme(settings.theme);
+  updateThemeToggle(settings.theme);
   availableModels = parseModels(settings.models, settings.model);
   let resolvedActive = "";
   if (settings.activeModel && availableModels.includes(settings.activeModel)) {
@@ -723,6 +745,15 @@ modelSelect.addEventListener("click", (event) => {
   }
 });
 exportButton.addEventListener("click", exportMarkdown);
+themeToggle.addEventListener("click", async () => {
+  const current = themeToggle.dataset.theme || settings?.theme || "auto";
+  const index = themeOrder.indexOf(current);
+  const next = themeOrder[(index + 1) % themeOrder.length];
+  settings.theme = next;
+  applyTheme(next);
+  updateThemeToggle(next);
+  await setStorage({ theme: next });
+});
 
 loadSettings();
 loadConversations();

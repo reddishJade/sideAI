@@ -12,6 +12,7 @@ const statusEl = document.getElementById("status");
 let history = [];
 let settings = null;
 let isSending = false;
+const MAX_HISTORY = 100;
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -25,6 +26,20 @@ function setStorage(values) {
     return browser.storage.sync.set(values);
   }
   return new Promise((resolve) => chrome.storage.sync.set(values, resolve));
+}
+
+function getLocalStorage(keys) {
+  if (isBrowser) {
+    return browser.storage.local.get(keys);
+  }
+  return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
+}
+
+function setLocalStorage(values) {
+  if (isBrowser) {
+    return browser.storage.local.set(values);
+  }
+  return new Promise((resolve) => chrome.storage.local.set(values, resolve));
 }
 
 function setStatus(text, isError = false) {
@@ -79,6 +94,25 @@ function clearChat() {
   history = [];
   chatEl.innerHTML = "";
   setStatus("Conversation cleared");
+  setLocalStorage({ history: [] });
+}
+
+async function loadHistory() {
+  const data = await getLocalStorage({ history: [] });
+  history = Array.isArray(data.history) ? data.history : [];
+  chatEl.innerHTML = "";
+  history.forEach((message) => {
+    if (message?.role && message?.content) {
+      addMessage(message.role, message.content);
+    }
+  });
+}
+
+function persistHistory() {
+  if (history.length > MAX_HISTORY) {
+    history = history.slice(history.length - MAX_HISTORY);
+  }
+  setLocalStorage({ history });
 }
 
 async function loadSettings() {
@@ -221,6 +255,7 @@ async function sendMessage() {
   promptEl.value = "";
   addMessage("user", text);
   history.push({ role: "user", content: text });
+  persistHistory();
 
   setStatus("Thinking...");
 
@@ -276,6 +311,7 @@ async function sendMessage() {
     }
 
     history.push({ role: "assistant", content: assistantMessage });
+    persistHistory();
     setStatus("Ready");
   } catch (error) {
     const message = error?.message || "Request failed";
@@ -308,6 +344,7 @@ modelSelect.addEventListener("change", () => {
 });
 
 loadSettings();
+loadHistory();
 
 if (ext.storage?.onChanged) {
   ext.storage.onChanged.addListener((changes, area) => {

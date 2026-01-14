@@ -18,6 +18,16 @@ Run:
 ```
 This creates `dist/chrome.zip` and `dist/firefox.zip`.
 
+## Release via GitHub tags
+Push a tag like `v0.1.0` and GitHub Actions will publish a Release with the two zip assets.
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Note: GitHub automatically attaches source archives to releases; this cannot be disabled.
+
 ### Install in Chrome (packed)
 1. Open `chrome://extensions`.
 2. Drag `dist/chrome.zip` into the page or use "Load unpacked" with the extracted zip folder.

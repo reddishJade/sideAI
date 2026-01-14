@@ -74,13 +74,13 @@ function renderMarkdown(content) {
 
   let html = escapeHtml(text);
   html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-  html = html.replace(/\\*\\*([^*]+)\\*\\*/g, "<strong>$1</strong>");
-  html = html.replace(/(^|\\s)\\*([^*]+)\\*/g, "$1<em>$2</em>");
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|\s)\*([^*]+)\*/g, "$1<em>$2</em>");
   html = html.replace(
-    /\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)/g,
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
     '<a href="$2" target="_blank" rel="noreferrer">$1</a>'
   );
-  html = html.replace(/\\n/g, "<br>");
+  html = html.replace(/\n/g, "<br>");
 
   blocks.forEach((block, index) => {
     const safeContent = escapeHtml(block.content);

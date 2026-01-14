@@ -24,6 +24,14 @@ function setStatus(text, isError = false) {
   statusEl.style.color = isError ? "var(--danger)" : "var(--muted)";
 }
 
+function parseNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme || "auto";
 }
@@ -48,12 +56,22 @@ async function loadSettings() {
     apiUrl: "https://api.openai.com/v1/chat/completions",
     model: "gpt-4o-mini",
     theme: "auto",
+    temperature: "",
+    maxTokens: "",
+    topP: "",
+    presencePenalty: "",
+    frequencyPenalty: "",
   });
   settings = {
     apiKey: (data.apiKey || "").trim(),
     apiUrl: (data.apiUrl || "").trim(),
     model: (data.model || "").trim(),
     theme: data.theme || "auto",
+    temperature: parseNumber(data.temperature),
+    maxTokens: parseNumber(data.maxTokens),
+    topP: parseNumber(data.topP),
+    presencePenalty: parseNumber(data.presencePenalty),
+    frequencyPenalty: parseNumber(data.frequencyPenalty),
   };
   applyTheme(settings.theme);
 
@@ -95,17 +113,33 @@ async function sendMessage() {
   setStatus("Thinking...");
 
   try {
+    const requestBody = {
+      model: settings.model,
+      messages: history,
+    };
+    if (settings.temperature !== null) {
+      requestBody.temperature = settings.temperature;
+    }
+    if (settings.maxTokens !== null) {
+      requestBody.max_tokens = Math.trunc(settings.maxTokens);
+    }
+    if (settings.topP !== null) {
+      requestBody.top_p = settings.topP;
+    }
+    if (settings.presencePenalty !== null) {
+      requestBody.presence_penalty = settings.presencePenalty;
+    }
+    if (settings.frequencyPenalty !== null) {
+      requestBody.frequency_penalty = settings.frequencyPenalty;
+    }
+
     const response = await fetch(settings.apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${settings.apiKey}`,
       },
-      body: JSON.stringify({
-        model: settings.model,
-        messages: history,
-        temperature: 0.2,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {

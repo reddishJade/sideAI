@@ -26,6 +26,26 @@
         <input type="text" id="model" placeholder="gpt-4o-mini" />
       </label>
       <label>
+        Temperature
+        <input type="number" id="temperature" min="0" max="2" step="0.1" placeholder="0.2" />
+      </label>
+      <label>
+        Max Tokens
+        <input type="number" id="max-tokens" min="1" step="1" placeholder="Leave empty for default" />
+      </label>
+      <label>
+        Top P
+        <input type="number" id="top-p" min="0" max="1" step="0.1" placeholder="1.0" />
+      </label>
+      <label>
+        Presence Penalty
+        <input type="number" id="presence-penalty" min="-2" max="2" step="0.1" placeholder="0" />
+      </label>
+      <label>
+        Frequency Penalty
+        <input type="number" id="frequency-penalty" min="-2" max="2" step="0.1" placeholder="0" />
+      </label>
+      <label>
         Theme
         <select id="theme">
           <option value="auto">Auto (system)</option>

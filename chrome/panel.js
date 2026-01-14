@@ -425,6 +425,14 @@ function closeMiniSettings() {
   miniSettings.classList.remove("open");
 }
 
+function toggleMiniSettings() {
+  if (miniSettings.classList.contains("open")) {
+    closeMiniSettings();
+    return;
+  }
+  openMiniSettings();
+}
+
 function applyMiniModelOptions(models, activeModel) {
   miniModelSelect.innerHTML = "";
   if (models.length === 0) {
@@ -691,7 +699,7 @@ promptEl.addEventListener("keydown", (event) => {
 
 sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
-settingsButton.addEventListener("click", openMiniSettings);
+settingsButton.addEventListener("click", toggleMiniSettings);
 historyClose.addEventListener("click", () => historyPanel.classList.remove("open"));
 newChatButton.addEventListener("click", () => {
   createConversation();

@@ -12,6 +12,7 @@ const historyButton = document.getElementById("history-button");
 const historyPanel = document.getElementById("history-panel");
 const historyList = document.getElementById("history-list");
 const historyClose = document.getElementById("history-close");
+const headerNewChatButton = document.getElementById("header-new-chat");
 const newChatButton = document.getElementById("new-chat");
 const historySearch = document.getElementById("history-search");
 const themeToggle = document.getElementById("theme-toggle");
@@ -772,6 +773,9 @@ sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
 settingsButton.addEventListener("click", toggleMiniSettings);
 historyClose.addEventListener("click", () => historyPanel.classList.remove("open"));
+headerNewChatButton.addEventListener("click", () => {
+  createConversation();
+});
 newChatButton.addEventListener("click", () => {
   createConversation();
   historyPanel.classList.remove("open");

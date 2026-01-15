@@ -335,7 +335,14 @@ async function loadConversations() {
     persistConversations();
     return;
   }
-  createConversation();
+  if (conversations.length === 0 || (conversations[0].messages && conversations[0].messages.length > 0)) {
+    createConversation();
+  } else {
+    activeConversationId = conversations[0].id;
+    history = conversations[0].messages || [];
+    renderHistoryList();
+    renderChat();
+  }
 }
 
 function setActiveConversation(id) {

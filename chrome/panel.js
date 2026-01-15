@@ -39,6 +39,8 @@ let activeConversationId = "";
 let historyFilter = "";
 const themeOrder = ["auto", "light", "dark"];
 let miniModels = [];
+let autoScrollEnabled = true;
+const SCROLL_THRESHOLD = 48;
 
 function fallbackEscape(value) {
   return (value || "")
@@ -63,6 +65,14 @@ function renderMessageContent(role, content) {
     return { html: markdown.renderMarkdown(value), usesMarkdown: true };
   }
   return { html: fallbackEscape(value).replace(/\n/g, "<br>"), usesMarkdown: false };
+}
+
+function isNearBottom() {
+  if (!chatEl) {
+    return true;
+  }
+  const distance = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
+  return distance < SCROLL_THRESHOLD;
 }
 
 function getStorage(keys) {
@@ -210,7 +220,9 @@ function addMessage(role, content, isError = false) {
     markdown.attachCopyHandlers(messageEl);
   }
   chatEl.appendChild(messageEl);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  if (autoScrollEnabled) {
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
   return messageEl;
 }
 
@@ -653,8 +665,11 @@ async function streamChatCompletion(requestBody) {
           const delta = parsed?.choices?.[0]?.delta?.content;
           if (delta) {
             assistantText += delta;
-            assistantEl.textContent = assistantText;
-            chatEl.scrollTop = chatEl.scrollHeight;
+            assistantEl.innerHTML = markdown.renderMarkdown(assistantText);
+            markdown.attachCopyHandlers(assistantEl);
+            if (autoScrollEnabled) {
+              chatEl.scrollTop = chatEl.scrollHeight;
+            }
           }
         } catch (error) {
           // Ignore malformed chunks.
@@ -788,6 +803,9 @@ sendButton.addEventListener("click", sendMessage);
 clearButton.addEventListener("click", clearChat);
 settingsButton.addEventListener("click", toggleMiniSettings);
 historyClose.addEventListener("click", () => historyPanel.classList.remove("open"));
+chatEl.addEventListener("scroll", () => {
+  autoScrollEnabled = isNearBottom();
+});
 headerNewChatButton.addEventListener("click", () => {
   createConversation();
 });

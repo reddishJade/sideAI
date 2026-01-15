@@ -60,13 +60,14 @@ body {
 
 .header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(135deg, rgba(34, 116, 165, 0.08), transparent 40%), var(--panel);
   box-shadow: var(--shadow);
-  gap: 8px;
+  gap: 10px;
 }
 
 .title {
@@ -76,9 +77,26 @@ body {
   color: var(--text);
 }
 
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.header-quick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .header-actions {
   display: flex;
   gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .icon-button {

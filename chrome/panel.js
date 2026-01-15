@@ -54,6 +54,16 @@ const markdown = window.SideAiMarkdown || {
   attachCopyHandlers: () => {},
 };
 
+function renderMessageContent(role, content) {
+  const value = content || "";
+  if (role === "assistant") {
+    return { html: markdown.renderMarkdown(value), usesMarkdown: true };
+  }
+  if (role === "user" && settings?.renderUserMarkdown) {
+    return { html: markdown.renderMarkdown(value), usesMarkdown: true };
+  }
+  return { html: fallbackEscape(value).replace(/\n/g, "<br>"), usesMarkdown: false };
+}
 
 function getStorage(keys) {
   if (isBrowser) {
@@ -194,8 +204,11 @@ function applyModelOptions(models, activeModel, hasApi) {
 function addMessage(role, content, isError = false) {
   const messageEl = document.createElement("div");
   messageEl.className = `message ${role}${isError ? " error" : ""}`;
-  messageEl.innerHTML = markdown.renderMarkdown(content || "");
-  markdown.attachCopyHandlers(messageEl);
+  const rendered = renderMessageContent(role, content);
+  messageEl.innerHTML = rendered.html;
+  if (rendered.usesMarkdown) {
+    markdown.attachCopyHandlers(messageEl);
+  }
   chatEl.appendChild(messageEl);
   chatEl.scrollTop = chatEl.scrollHeight;
   return messageEl;
@@ -536,6 +549,7 @@ async function loadSettings() {
     presencePenalty: "",
     frequencyPenalty: "",
     stream: true,
+    renderUserMarkdown: false,
   });
   settings = {
     apiKey: (data.apiKey || "").trim(),
@@ -550,6 +564,7 @@ async function loadSettings() {
     presencePenalty: parseNumber(data.presencePenalty),
     frequencyPenalty: parseNumber(data.frequencyPenalty),
     stream: data.stream !== false,
+    renderUserMarkdown: data.renderUserMarkdown === true,
   };
   applyTheme(settings.theme);
   updateThemeToggle(settings.theme);

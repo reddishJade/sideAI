@@ -11,6 +11,7 @@ const topPEl = document.getElementById("top-p");
 const presencePenaltyEl = document.getElementById("presence-penalty");
 const frequencyPenaltyEl = document.getElementById("frequency-penalty");
 const streamEl = document.getElementById("stream");
+const renderUserMarkdownEl = document.getElementById("render-user-markdown");
 const verifyButton = document.getElementById("verify-api");
 const verifyStatus = document.getElementById("verify-status");
 const saveButton = document.getElementById("save");
@@ -90,6 +91,7 @@ async function loadSettings() {
     presencePenalty: "",
     frequencyPenalty: "",
     stream: true,
+    renderUserMarkdown: false,
   });
   apiKeyEl.value = data.apiKey || "";
   apiUrlEl.value = data.apiUrl || "";
@@ -102,6 +104,7 @@ async function loadSettings() {
   presencePenaltyEl.value = data.presencePenalty ?? "";
   frequencyPenaltyEl.value = data.frequencyPenalty ?? "";
   streamEl.checked = data.stream !== false;
+  renderUserMarkdownEl.checked = data.renderUserMarkdown === true;
 }
 
 async function saveSettings() {
@@ -116,6 +119,7 @@ async function saveSettings() {
   const presencePenalty = presencePenaltyEl.value.trim();
   const frequencyPenalty = frequencyPenaltyEl.value.trim();
   const stream = streamEl.checked;
+  const renderUserMarkdown = renderUserMarkdownEl.checked;
 
   await setStorage({
     apiKey,
@@ -129,6 +133,7 @@ async function saveSettings() {
     presencePenalty,
     frequencyPenalty,
     stream,
+    renderUserMarkdown,
   });
   apiUrlEl.value = apiUrl;
   setStatus("Saved");

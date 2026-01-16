@@ -473,9 +473,9 @@ body {
 
 .history-panel {
   position: fixed;
-  top: 64px;
+  top: 100px;
   right: 14px;
-  bottom: 120px;
+  bottom: 130px;
   width: min(300px, 86vw);
   background: var(--panel);
   border: 1px solid var(--border);
@@ -600,7 +600,7 @@ body {
 
 .mini-settings {
   position: fixed;
-  top: 80px;
+  top: 100px;
   right: 14px;
   width: min(320px, 90vw);
   background: var(--panel);

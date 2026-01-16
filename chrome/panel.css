@@ -188,6 +188,42 @@ body {
   box-shadow: var(--shadow);
 }
 
+.message.collapsible {
+  padding: 8px 10px;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.message-label {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.toggle-button {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.message-body {
+  margin-top: 6px;
+}
+
+.message.collapsed .message-body {
+  display: none;
+}
+
 .message h1,
 .message h2,
 .message h3,

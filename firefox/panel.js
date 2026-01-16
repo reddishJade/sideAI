@@ -211,11 +211,41 @@ function applyModelOptions(models, activeModel, hasApi) {
   }
 }
 
-function addMessage(role, content, isError = false) {
+function addMessage(role, content, isError = false, options = {}) {
+  const { collapseUser = false } = options;
   const messageEl = document.createElement("div");
   messageEl.className = `message ${role}${isError ? " error" : ""}`;
   const rendered = renderMessageContent(role, content);
-  messageEl.innerHTML = rendered.html;
+
+  if (role === "user") {
+    messageEl.classList.add("collapsible");
+    if (collapseUser) {
+      messageEl.classList.add("collapsed");
+    }
+    const header = document.createElement("div");
+    header.className = "message-header";
+    const label = document.createElement("span");
+    label.className = "message-label";
+    label.textContent = "You";
+    const toggle = document.createElement("button");
+    toggle.className = "toggle-button";
+    toggle.type = "button";
+    toggle.textContent = collapseUser ? "Expand" : "Collapse";
+    header.append(label, toggle);
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+    body.innerHTML = rendered.html;
+    messageEl.append(header, body);
+
+    toggle.addEventListener("click", () => {
+      messageEl.classList.toggle("collapsed");
+      toggle.textContent = messageEl.classList.contains("collapsed") ? "Expand" : "Collapse";
+    });
+  } else {
+    messageEl.innerHTML = rendered.html;
+  }
+
   if (rendered.usesMarkdown) {
     markdown.attachCopyHandlers(messageEl);
   }
@@ -716,7 +746,7 @@ async function sendMessage() {
   isSending = true;
   sendButton.disabled = true;
   promptEl.value = "";
-  addMessage("user", text);
+  addMessage("user", text, false, { collapseUser: true });
   history.push({ role: "user", content: text });
   const conversation = getConversation(activeConversationId);
   if (conversation) {

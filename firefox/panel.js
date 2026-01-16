@@ -214,8 +214,24 @@ function applyModelOptions(models, activeModel, hasApi) {
 function addMessage(role, content, isError = false, options = {}) {
   const { collapseUser = false } = options;
   const messageEl = document.createElement("div");
-  messageEl.className = `message ${role}${isError ? " error" : ""}`;
+  messageEl.className = `message ${role}${isError ? " error" : ""} has-actions`;
   const rendered = renderMessageContent(role, content);
+
+  const copyButton = document.createElement("button");
+  copyButton.className = "message-copy";
+  copyButton.type = "button";
+  copyButton.textContent = "Copy";
+  copyButton.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(content || "");
+    const original = copyButton.textContent;
+    copyButton.textContent = "Copied";
+    setTimeout(() => {
+      copyButton.textContent = original;
+    }, 1200);
+  });
+  const actions = document.createElement("div");
+  actions.className = "message-actions";
+  actions.append(copyButton);
 
   if (role === "user") {
     messageEl.classList.add("collapsible");
@@ -239,14 +255,24 @@ function addMessage(role, content, isError = false, options = {}) {
     const body = document.createElement("div");
     body.className = "message-body";
     body.innerHTML = rendered.html;
-    messageEl.append(header, body);
+    messageEl.append(header, body, actions);
 
     toggle.addEventListener("click", () => {
       messageEl.classList.toggle("collapsed");
       toggle.textContent = messageEl.classList.contains("collapsed") ? "Expand" : "Collapse";
     });
   } else {
-    messageEl.innerHTML = rendered.html;
+    const header = document.createElement("div");
+    header.className = "message-header";
+    const label = document.createElement("span");
+    label.className = "message-label";
+    label.textContent = "AI";
+    header.append(label);
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+    body.innerHTML = rendered.html;
+    messageEl.append(header, body, actions);
   }
 
   if (rendered.usesMarkdown) {
@@ -404,6 +430,9 @@ function renderHistoryList() {
   });
 
   sorted.forEach((conversation) => {
+      if (!conversation.messages || conversation.messages.length === 0 || (conversation.title === "New chat" && conversation.messages.length === 0)) {
+        return;
+      }
     if (term) {
       const haystack = `${conversation.title || ""} ${conversation.messages?.[0]?.content || ""}`
         .toLowerCase()

@@ -227,11 +227,14 @@ function addMessage(role, content, isError = false, options = {}) {
     const label = document.createElement("span");
     label.className = "message-label";
     label.textContent = "You";
+    const preview = document.createElement("span");
+    preview.className = "message-preview";
+    preview.textContent = (content || "").replace(/\s+/g, " ").trim();
     const toggle = document.createElement("button");
     toggle.className = "toggle-button";
     toggle.type = "button";
     toggle.textContent = collapseUser ? "Expand" : "Collapse";
-    header.append(label, toggle);
+    header.append(label, preview, toggle);
 
     const body = document.createElement("div");
     body.className = "message-body";
